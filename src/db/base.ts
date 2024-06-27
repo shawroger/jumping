@@ -1,20 +1,82 @@
 
-interface I_DBControllerSettings {
+export interface I_DBControllerSettings {
     name: string;
-    value: string;
+    desp?: string;
+    placeholder?: string;
+    value?: string | number;
+    default: string | number;
     type: "string" | "number" | "password";
 }
 
+export function parseNumber(value: string | number | undefined, defaultValue: number) {
+    if(typeof value === "number") return value;
+    if(typeof value === "undefined") return defaultValue;
+    const num = parseInt(value);
+    return isNaN(num) ? defaultValue : num;
+}
 
-export function loadSettingsUtils(db: I_DBController, settings: I_DBControllerSettings[]) {
-    const key = db.getName() + "@settings";
-    const settingsJson = {
-        name: key,
-        settings
+export function findSettingByName(db: I_DBController, name: string): string | number | undefined {
+    const settings = loadSettings(db);
+
+    for (const item of settings) {
+        if (item.name == name) {
+            return item.value;
+        }
     }
 
-    window.localStorage.setItem(key.toUpperCase(), JSON.stringify(settingsJson));
-    return key;
+    return undefined;
+}
+
+export function loadSettings(db: I_DBController) {
+    const key = (db.getName() + "@settings").toUpperCase();
+
+    let settingJson: I_DBControllerSettings[] = [];
+    const settingsValue = window.localStorage.getItem(key);
+
+    if (settingsValue) {
+        const json = JSON.parse(settingsValue);
+        settingJson = json.settings;
+
+    } else if (db.getSettings) {
+        settingJson = db.getSettings();
+    }
+
+    for (const item of settingJson) {
+        if (item.value === undefined) {
+            item.value = item.default;
+        }
+
+        if (item.desp === undefined) {
+            item.desp = item.name;
+        }
+
+        if (item.placeholder === undefined) {
+            item.placeholder = item.desp;
+        }
+    }
+    return settingJson;
+}
+
+export function setSettings(db: I_DBController, settingsValue: I_DBControllerSettings[]) {
+    const key = (db.getName() + "@settings").toUpperCase();
+
+    const json = {
+        key,
+        settings: (settingsValue)
+    };
+
+    window.localStorage.setItem(key, JSON.stringify(json));
+}
+
+export function mergeSettings(settingsValue: I_DBControllerSettings[], newValues: any) {
+    for (const item of settingsValue) {
+        if (newValues[item.name] !== undefined) {
+            item.value = newValues[item.name];
+        } else if (item.value === undefined) {
+            item.value = item.default;
+        }
+    }
+    return settingsValue;
 }
 
 
@@ -41,9 +103,6 @@ export interface I_DBController {
     rewriteAll?: (data: string[][]) => string | Promise<string>;
     getAll?: () => string[][] | Promise<string[][]>;
 
-    settingTools?: () => ({
-        defineSettings: () => I_DBControllerSettings[],
-        loadSettings: (settings: I_DBControllerSettings[]) => void;
-    });
+    getSettings?: () => I_DBControllerSettings[];
 
 }

@@ -37,7 +37,7 @@ async function applyEvent() {
     notify({
         message: targetURL,
         color: "#04030C",
-        duration: 500000,
+        duration: 5000,
         position: 'bottom-right',
         customClass: "toast-success-msg"
     });
@@ -47,7 +47,7 @@ async function applyEvent() {
 
 <template>
     <div class="form-app row justify-center">
-        <VaCard class="flex xl5 lg8 md10 sm10 xs11">
+        <VaCard class="flex xl7 lg10 md10 sm10 xs11">
             <VaCardTitle class="row justify-center">
                 <img :src="navSvg" alt="jumping-url-logo" />
             </VaCardTitle>

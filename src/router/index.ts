@@ -6,9 +6,9 @@ import Dataview from "../view/dataview.vue";
 
 const routes = [
   { path: '/', component: HomeView },
-  { path: '/~404', component: bad404 },
   { path: '/~dataview', component: Dataview },
   { path: '/~settings', component: Settings },
+  { path: '/~404', component: bad404 },
   
 ]
 

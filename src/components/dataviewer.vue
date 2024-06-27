@@ -3,7 +3,7 @@ import { computed, onMounted, ref } from "vue"
 import { loadDB } from "../utils/loadDB";
 import navSvg from "../assets/navigation-svgrepo-com.svg"
 
-import { useToast } from 'vuestic-ui';
+import { useToast, useModal } from 'vuestic-ui';
 
 const { notify } = useToast();
 
@@ -52,19 +52,18 @@ const columns = computed(() => {
             thAlign: "center",
             tdVerticalAlign: "top",
             tdClass: "table-url-class",
-            width: "100%"
         }
     ];
 
     if (currentSettingMode.value.deleteItem || currentSettingMode.value.editItem) {
-        return [...originCols, { key: "ACTION", width: 80 }]
+        return [...originCols, { key: "ACTION", width: 60 }]
     } else {
         return originCols;
     }
 
 });
 
-
+const { confirm } = useModal();
 
 const loadingTable = ref(false)
 const showUploadModal = ref(false)
@@ -85,7 +84,7 @@ async function readData() {
         storeData.value = await currentSettingMode.value.getAll();
     }
 
-
+    currentPage.value = 1;
 }
 
 async function downloadData() {
@@ -95,7 +94,7 @@ async function downloadData() {
             notify({
                 message,
                 color: "#04030C",
-                duration: 500000,
+                duration: 5000,
                 position: 'bottom-right',
                 customClass: "toast-success-msg"
             });
@@ -123,7 +122,7 @@ async function confirmUpload() {
                     notify({
                         message,
                         color: "#04030C",
-                        duration: 500000,
+                        duration: 5000,
                         position: 'bottom-right',
                         customClass: "toast-success-msg"
                     });
@@ -145,6 +144,72 @@ async function uploadData() {
 
 }
 
+async function deleteItem(key: string) {
+    confirm({
+        title: "Warning for Delete",
+        message: 'Are you sure to delete the key [' + key + '] permanently?',
+    }).then(async (ok) => {
+        if (ok && currentSettingMode.value.deleteItem) {
+            const message = await currentSettingMode.value.deleteItem(key);
+
+            await readData();
+            notify({
+                message,
+                color: "#04030C",
+                duration: 5000,
+                position: 'bottom-right',
+                customClass: "toast-success-msg"
+            });
+        }
+    });
+}
+
+
+const editKey = ref("");
+const editValue = ref("");
+const editValueOld = ref("");
+const showEditModal = ref(false);
+
+function clickEditItemBtn(key: string, value: string) {
+    showEditModal.value = true;
+    editKey.value = key;
+    editValue.value = value;
+    editValueOld.value = value;
+}
+
+async function confirmEditItem() {
+    if (editValueOld.value === editValue.value) {
+        notify({
+            message: "You have not changed this value",
+            color: "#04030C",
+            duration: 5000,
+            position: 'bottom-right',
+            customClass: "toast-success-msg"
+        });
+    } else {
+
+        if (currentSettingMode.value.editItem) {
+            const message = await currentSettingMode.value.editItem(editKey.value, editValue.value);
+
+            notify({
+                message,
+                color: "#04030C",
+                duration: 5000,
+                position: 'bottom-right',
+                customClass: "toast-success-msg"
+            });
+        }
+
+    }
+    editKey.value = '';
+    editValue.value = '';
+    editValueOld.value = '';
+
+    await readData();
+
+
+}
+
 onMounted(() => readData())
 
 </script>
@@ -152,11 +217,22 @@ onMounted(() => readData())
 
 <template>
 
+    <VaModal v-model="showEditModal" ok-text="OK" maxWidth="600px" @ok="confirmEditItem">
+        <div class="row justify-center">
+            <div class="flex flex-col xs12">
+                <VaInput label="KEY" style="width:100%" v-model="editKey" :readonly="true" />
+            </div>
+            <div class="flex flex-col xs12" style="margin-top: 2em">
+                <VaInput label="EDIT VALUE" style="width:100%" v-model="editValue" />
+            </div>
+        </div>
+    </VaModal>
+
     <VaModal v-model="showUploadModal" ok-text="OK" maxWidth="600px" @close="fileUpload = []" @ok="confirmUpload">
         <VaFileUpload :disabled="fileUpload.length >= 1" v-model="fileUpload" dropzone file-types="txt,csv" />
     </VaModal>
     <div class="dataview-app row justify-center">
-        <VaCard class="flex xl6 lg10 md10 sm10 xs11">
+        <VaCard class="flex xl7 lg10 md10 sm10 xs11">
             <VaCardTitle class="row justify-space-around">
                 <img :src="navSvg" alt="jumping-url-logo" />
 
@@ -172,7 +248,7 @@ onMounted(() => readData())
                         </div>
                         <div class="flex flex-col md2">
                             <VaSelect label="PAGE SIZE" v-model="perPage" :options="perPageOptions"
-                                @update:modelValue="currentPage = 0" />
+                                @update:modelValue="currentPage = 1" />
                         </div>
 
                         <div class="row md12 help-button-bar justify-space-around">
@@ -190,16 +266,19 @@ onMounted(() => readData())
 
                         <template #bodyAppend>
                             <tr v-if="tableData.length > 0">
-                                <td colspan="3">
+                                <td :colspan="columns.length">
                                     <div class="flex justify-center dataview-nav">
-                                        <VaPagination v-model="currentPage" :pages="pages" />
+                                        <VaPagination v-model="currentPage" :pages="pages" 
+                                        :visible-pages="5" />
                                     </div>
                                 </td>
                             </tr>
                         </template>
-                        <template #cell(ACTION)>
-                            <VaButton v-if="currentSettingMode.editItem" preset="plain" icon="edit" />
-                            <VaButton v-if="currentSettingMode.deleteItem" preset="plain" icon="delete" class="ml-3" />
+                        <template #cell(ACTION)="{ rowData }">
+                            <VaButton @click="clickEditItemBtn(rowData.KEY, rowData.URL)"
+                                v-if="currentSettingMode.editItem" preset="plain" icon="edit" />
+                            <VaButton @click="deleteItem(rowData.KEY)" v-if="currentSettingMode.deleteItem"
+                                preset="plain" icon="delete" class="ml-3" />
                         </template>
                     </VaDataTable>
                 </template>
@@ -243,24 +322,21 @@ onMounted(() => readData())
         }
 
         .table-url-class {
+            max-width: 100px;
             color: #AB4312;
             font-size: 0.9em;
             overflow: hidden;
             text-align: center;
             white-space: nowrap;
             text-overflow: ellipsis;
-
             font-family: Consolas, monaco, monospace;
-
-            a {
-                text-decoration: none;
-            }
 
             a,
             a:visited,
             a:hover,
             a:active {
                 color: inherit;
+                text-decoration: none;
             }
         }
 

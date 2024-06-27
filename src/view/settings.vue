@@ -1,6 +1,7 @@
 <script setup lang="ts">
+import settingApp from "../components/settings.vue"
 </script>
 
 <template>
-    settings
+    <settingApp></settingApp>
 </template>

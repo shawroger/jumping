@@ -1,9 +1,12 @@
 <script setup lang="ts">
-import { ref } from "vue"
+import { ref, computed, Ref, onMounted } from "vue"
+import { useToast } from 'vuestic-ui';
 import { loadDB } from "../utils/loadDB";
 import navSvg from "../assets/navigation-svgrepo-com.svg"
+import { I_DBControllerSettings, loadSettings, mergeSettings, setSettings } from "../db/base";
 
 const db = loadDB();
+const { notify } = useToast();
 const currentSettingMode = ref(db.current());
 const choosenMode = ref(db.current().getDesp());
 const providerList = db.getProviders().map(e => e.getDesp());
@@ -15,14 +18,40 @@ function changeSelection() {
     }
 }
 
+const settingConfig = ref([] as I_DBControllerSettings[]);
 
+const settingValues = ref({} as any);
+
+function loadSettingsFromStorage() {
+    settingConfig.value = loadSettings(currentSettingMode.value);
+    for (const item of settingConfig.value) {
+        settingValues.value[item.name] = item.value;
+    }
+}
+
+onMounted(() => {
+    loadSettingsFromStorage();
+})
+
+function confirmChange() {
+    const newSettings = mergeSettings(settingConfig.value, settingValues.value);
+    setSettings(currentSettingMode.value, newSettings);
+    loadSettingsFromStorage();
+    notify({
+        message: "Settings have changed",
+        color: "#04030C",
+        duration: 5000,
+        position: 'bottom-right',
+        customClass: "toast-success-msg"
+    });
+}
 
 </script>
 
 
 <template>
     <div class="settings-app row justify-center">
-        <VaCard class="flex xl6 lg10 md10 sm10 xs11">
+        <VaCard class="flex xl7 lg10 md10 sm10 xs11">
             <VaCardTitle class="row justify-space-around">
                 <img :src="navSvg" alt="jumping-url-logo" />
 
@@ -30,7 +59,19 @@ function changeSelection() {
                     @update:modelValue="changeSelection" placeholder="Select an option for storage" />
             </VaCardTitle>
             <VaCardContent class="row justify-center">
-                <template v-if="currentSettingMode.settingTools"></template>
+                <template v-if="currentSettingMode.getSettings">
+                    <div class="row justify-center">
+                        <div class="flex flex-col xs12" v-for="item in settingConfig" :key="item.name"
+                            style="margin: 0.5em 0">
+                            <VaInput :label="item.desp" style="width:100%" v-model="settingValues[item.name]"
+                                :type="item.type" />
+                        </div>
+
+                        <div class="flex xs12 row justify-center" style="margin-top: 1.5em">
+                            <VaButton @click="confirmChange">CONFIRM CHANGE</VaButton>
+                        </div>
+                    </div>
+                </template>
                 <template v-else>
                     <p>current mode has no settings for view</p>
                 </template>
@@ -41,9 +82,6 @@ function changeSelection() {
 </template>
 
 <style lang="less">
-
-
-
 .settings-app {
     min-height: inherit;
 

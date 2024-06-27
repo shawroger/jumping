@@ -1,5 +1,5 @@
 import { openDB } from "idb"
-import { I_DBController } from "./base";
+import { I_DBController, I_DBControllerSettings, findSettingByName, loadSettings, parseNumber } from "./base";
 
 import { uid } from "uid/single";
 import { createDownloadTxt, getTimestampStr } from "../utils/createDownloadTxt";
@@ -27,8 +27,43 @@ export class IndexDBController implements I_DBController {
         return "download " + filename + " successfully";
     }
 
-    async deleteItem() {
-        
+    async deleteItem(key: string) {
+
+        const db = await openDB(this.storeName, 1);
+        try {
+            await db.delete(this.tableName, key);
+        } catch (err) {
+            return String(err);
+        } finally {
+            return "Delete key " + key + " successfully"
+        }
+    }
+
+
+    async editItem(key: string, value: string) {
+
+        const db = await openDB(this.storeName, 1);
+        try {
+            await db.put(this.tableName, value, key);
+        } catch (err) {
+            return String(err);
+        } finally {
+            return "Edit key " + key + " into new value " + value + " successfully";
+        }
+    }
+
+    getSettings(): I_DBControllerSettings[] {
+        return [{
+            default: 6,
+            type: "number",
+            name: "UUID_LENGTH",
+            desp: "DEFINE YOUR UID LENGTH",
+        }, {
+            type: "string",
+            name: "DOWNLOAD_PREFIX",
+            default: "JUMPING_URL@INDEXDB",
+            desp: "DEFINE DOWNLOAD FILE PREFIX",
+        }];
     }
 
     async rewriteAll(data: string[][]) {
@@ -39,7 +74,7 @@ export class IndexDBController implements I_DBController {
             for (const [key, value] of data) {
                 await transaction.store.add(value, key);
             }
-        } catch(err) {
+        } catch (err) {
             return String(err);
         } finally {
             return "rewrite the indexDB datatable successfully";
@@ -70,7 +105,10 @@ export class IndexDBController implements I_DBController {
         return key;
     }
     async init() {
-        console.log(this.getName() + " is initialized")
+        this.autoKeyLen = parseNumber(findSettingByName(this, "UUID_LENGTH"), 6);
+
+        console.log(this.getName() + " is initialized\nauto key length is " + this.autoKeyLen)
+
         openDB(this.storeName, 1, {
             upgrade: (db) => {
                 db.createObjectStore(this.tableName);

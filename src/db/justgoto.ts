@@ -10,9 +10,6 @@ export class JustGoto implements I_DBController {
 
 
 
-    getAll?: (() => string[][]) | undefined;
-    download?: (() => void) | undefined;
-    rewriteAll?: (() => void) | undefined;
     getName = () => "justgoto";
 
     getDesp = () => "use origin input URL and do not shorten it";
