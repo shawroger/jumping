@@ -9,7 +9,7 @@ const choosenMode = ref(db.current().getDesp());
 const providerList = db.getProviders().map(e => e.getDesp());
 
 function changeSelection() {
-    const [provider, index] = db.findByDesp(choosenMode.value);
+    const [provider, _] = db.findByDesp(choosenMode.value);
     if (provider) {
         currentSettingMode.value = provider;
     }
@@ -21,7 +21,7 @@ function changeSelection() {
 
 
 <template>
-    <div class="form-app row justify-center">
+    <div class="settings-app row justify-center">
         <VaCard class="flex xl6 lg10 md10 sm10 xs11">
             <VaCardTitle class="row justify-space-around">
                 <img :src="navSvg" alt="jumping-url-logo" />
@@ -41,10 +41,10 @@ function changeSelection() {
 </template>
 
 <style lang="less">
-@import "vuestic-ui/styles/grid";
 
 
-.form-app {
+
+.settings-app {
     min-height: inherit;
 
     .va-card {

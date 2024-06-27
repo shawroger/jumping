@@ -1,27 +1,161 @@
 <script setup lang="ts">
-import { ref } from "vue"
+import { computed, onMounted, ref } from "vue"
 import { loadDB } from "../utils/loadDB";
 import navSvg from "../assets/navigation-svgrepo-com.svg"
 
+import { useToast } from 'vuestic-ui';
+
+const { notify } = useToast();
+
 const db = loadDB();
+const storeData = ref([] as string[][]);
 const currentSettingMode = ref(db.current());
 const choosenMode = ref(db.current().getDesp());
 const providerList = db.getProviders().map(e => e.getDesp());
 
+const tableData = computed(() => storeData.value.map((e, k) => ({
+    ID: k + 1,
+    KEY: e[0],
+    URL: e[1]
+})))
+
+const filter = ref("")
+const currentPage = ref(1);
+const filtered = ref(tableData.value);
+const perPageOptions = computed(() =>
+    [10, 15, 20, 30, 50, 100, 200, 500, 1000].filter(e => e < filtered.value.length)
+)
+
+const perPage = ref(perPageOptions.value[0] || 10);
+const columns = computed(() => {
+    const originCols = [
+        {
+            key: "ID",
+            label: "#",
+            thAlign: "center",
+            tdAlign: "center",
+            tdVerticalAlign: "top",
+            tdClass: "table-id-class",
+            width: "50px",
+        },
+        {
+            key: "KEY",
+            label: "KEY",
+            thAlign: "center",
+            tdVerticalAlign: "top",
+            tdClass: "table-key-class",
+            width: "100px"
+        },
+        {
+            key: "URL",
+            label: "URL",
+            thAlign: "center",
+            tdVerticalAlign: "top",
+            tdClass: "table-url-class",
+            width: "100%"
+        }
+    ];
+
+    if (currentSettingMode.value.deleteItem || currentSettingMode.value.editItem) {
+        return [...originCols, { key: "ACTION", width: 80 }]
+    } else {
+        return originCols;
+    }
+
+});
+
+
+
+const loadingTable = ref(false)
+const showUploadModal = ref(false)
+const fileUpload = ref([] as any)
+const pages = computed(() =>
+    perPage.value && perPage.value !== 0 ?
+        Math.ceil(filtered.value.length / perPage.value) : filtered.value.length)
+
 function changeSelection() {
-    const [provider, index] = db.findByDesp(choosenMode.value);
+    const [provider, _] = db.findByDesp(choosenMode.value);
     if (provider) {
         currentSettingMode.value = provider;
+        readData();
+    }
+}
+async function readData() {
+    if (typeof currentSettingMode.value.getAll === "function") {
+        storeData.value = await currentSettingMode.value.getAll();
+    }
+
+
+}
+
+async function downloadData() {
+    if (typeof currentSettingMode.value.download === "function") {
+        const message = await currentSettingMode.value.download();
+        if (message) {
+            notify({
+                message,
+                color: "#04030C",
+                duration: 500000,
+                position: 'bottom-right',
+                customClass: "toast-success-msg"
+            });
+        }
     }
 }
 
+async function confirmUpload() {
+    storeData.value = [];
+    loadingTable.value = true;
+    if (typeof currentSettingMode.value.rewriteAll === "function" && fileUpload.value.length >= 1) {
+        const file = fileUpload.value[0];
+        const reader = new FileReader();
+        reader.readAsText(file, "UTF-8");
+        reader.onload = async (evt) => {
+            if (evt && evt.target) {
+                const fileString = evt.target.result?.toString();
+                if (fileString) {
+                    const arraydata = fileString.split("\n").map(e => {
+                        const key = e.split(",")[0];
+                        const value = e.slice(key.length + 1);
+                        return [key, value];
+                    })
+                    const message = await currentSettingMode.value.rewriteAll!(arraydata);
+                    notify({
+                        message,
+                        color: "#04030C",
+                        duration: 500000,
+                        position: 'bottom-right',
+                        customClass: "toast-success-msg"
+                    });
 
+
+                    await readData();
+                    loadingTable.value = false;
+                }
+            }
+        }
+    }
+
+
+
+}
+
+async function uploadData() {
+    showUploadModal.value = true;
+
+}
+
+onMounted(() => readData())
 
 </script>
 
 
 <template>
-    <div class="form-app row justify-center">
+
+    <VaModal v-model="showUploadModal" ok-text="OK" maxWidth="600px" @close="fileUpload = []" @ok="confirmUpload">
+        <VaFileUpload :disabled="fileUpload.length >= 1" v-model="fileUpload" dropzone file-types="txt,csv" />
+    </VaModal>
+    <div class="dataview-app row justify-center">
         <VaCard class="flex xl6 lg10 md10 sm10 xs11">
             <VaCardTitle class="row justify-space-around">
                 <img :src="navSvg" alt="jumping-url-logo" />
@@ -30,7 +164,45 @@ function changeSelection() {
                     @update:modelValue="changeSelection" placeholder="Select an option for storage" />
             </VaCardTitle>
             <VaCardContent class="row justify-center">
-                <template v-if="currentSettingMode.showAll"></template>
+                <template v-if="currentSettingMode.getAll">
+                    <div class="row help-table-bar justify-space-between">
+                        <div class="flex flex-col md10" style="padding-right: 1em;">
+                            <VaInput label="SEARCH IN TABLE" v-model="filter" style="width:100%"
+                                placeholder="ENTER ANYTHING YOU WANT TO FIND IN TABLE"></VaInput>
+                        </div>
+                        <div class="flex flex-col md2">
+                            <VaSelect label="PAGE SIZE" v-model="perPage" :options="perPageOptions"
+                                @update:modelValue="currentPage = 0" />
+                        </div>
+
+                        <div class="row md12 help-button-bar justify-space-around">
+                            <VaButton @click="downloadData" v-if="currentSettingMode.download">DOWNLOAD</VaButton>
+                            <VaButton @click="uploadData" v-if="currentSettingMode.rewriteAll">UPLOAD</VaButton>
+                        </div>
+                    </div>
+                    <VaDataTable :loading="loadingTable" :items="tableData" :columns="columns" :per-page="perPage"
+                        :current-page="currentPage" :filter="filter" @filtered="filtered = $event.items">
+                        <template #cell(URL)="{ value }">
+
+                            <a :href="value" _target="_blank">{{ value }}</a>
+
+                        </template>
+
+                        <template #bodyAppend>
+                            <tr v-if="tableData.length > 0">
+                                <td colspan="3">
+                                    <div class="flex justify-center dataview-nav">
+                                        <VaPagination v-model="currentPage" :pages="pages" />
+                                    </div>
+                                </td>
+                            </tr>
+                        </template>
+                        <template #cell(ACTION)>
+                            <VaButton v-if="currentSettingMode.editItem" preset="plain" icon="edit" />
+                            <VaButton v-if="currentSettingMode.deleteItem" preset="plain" icon="delete" class="ml-3" />
+                        </template>
+                    </VaDataTable>
+                </template>
                 <template v-else>
                     <p>current mode has no data for view</p>
                 </template>
@@ -41,11 +213,69 @@ function changeSelection() {
 </template>
 
 <style lang="less">
-@import "vuestic-ui/styles/grid";
-
-
-.form-app {
+.dataview-app {
     min-height: inherit;
+
+    .row.help-table-bar {
+        margin-bottom: 2em;
+    }
+
+    .help-button-bar {
+        margin-top: 1em;
+    }
+
+    table {
+
+
+
+        td:nth-of-type(1),
+        td:nth-of-type(2) {
+            text-align: center !important;
+        }
+
+        .table-id-class {
+            font-size: 0.8em;
+        }
+
+        .table-key-class {
+            font-weight: bolder;
+            font-family: Consolas, monaco, monospace;
+        }
+
+        .table-url-class {
+            color: #AB4312;
+            font-size: 0.9em;
+            overflow: hidden;
+            text-align: center;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+
+            font-family: Consolas, monaco, monospace;
+
+            a {
+                text-decoration: none;
+            }
+
+            a,
+            a:visited,
+            a:hover,
+            a:active {
+                color: inherit;
+            }
+        }
+
+        .dataview-nav {
+
+            margin-top: 2em;
+
+            nav {
+                display: flex;
+                justify-content: center;
+            }
+        }
+    }
+
+
 
     .va-card {
         margin-top: 1em;

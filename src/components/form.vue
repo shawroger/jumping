@@ -71,7 +71,7 @@ async function applyEvent() {
 </template>
 
 <style lang="less">
-@import "vuestic-ui/styles/grid";
+
 
 
 .form-app {
@@ -94,15 +94,15 @@ async function applyEvent() {
 
         .va-card-title img {
             width: 45%;
-            animation: va-card-title-img-rotating 5s infinite;
+            animation: va-card-title-img-rotating-form 5s infinite;
             animation-timing-function:cubic-bezier(0.455, 0.03, 0.515, 0.955);
         }
 
         .va-card-title img:hover {
-            animation: va-card-title-img-rotating 1s linear infinite;
+            animation: va-card-title-img-rotating-form 1s linear infinite;
         }
 
-        @keyframes va-card-title-img-rotating {
+        @keyframes va-card-title-img-rotating-form {
             from {
                 transform: rotate(0deg);
             }

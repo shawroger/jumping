@@ -8,4 +8,14 @@ import { router } from './router';
 import { DB_PROVIDER_KEY, db_Provider } from './db';
 
 
-createApp(App).use(router).use(createVuestic()).provide(DB_PROVIDER_KEY, db_Provider).mount("#app");
+createApp(App).use(router).use(createVuestic({
+    config: {
+        colors: {
+          presets: {
+            light: {
+              primary: '#04030C',
+            }
+          }
+        },
+      },
+})).provide(DB_PROVIDER_KEY, db_Provider).mount("#app");

@@ -26,6 +26,10 @@ export interface I_DBController {
     showURLText: (url: string) => string;
 
 
+    deleteItem?: (key: string) => string | Promise<string>;
+    editItem?: (key: string, value: string) => string | Promise<string>;
+
+
     init: (params?: any) => void;
     addItem: (key: string, value: string) => void;
     getItem: (key: string) => string | Promise<string>;
@@ -33,9 +37,9 @@ export interface I_DBController {
 
 
     // can ignore
-    upload?: () => void;
-    download?: () => void;
-    showAll?: () => string[][] | Promise<string[][]>;
+    download?: () => string | Promise<string>;
+    rewriteAll?: (data: string[][]) => string | Promise<string>;
+    getAll?: () => string[][] | Promise<string[][]>;
 
     settingTools?: () => ({
         defineSettings: () => I_DBControllerSettings[],

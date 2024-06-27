@@ -24,7 +24,7 @@ const matchProvider = db.matchProvider(input.value);
 (async function faraway() {
     if (matchProvider) {
         const towhere = await matchProvider.getItem(input.value);
-        if(!towhere) {
+        if (!towhere) {
             router.push("/~404");
             return;
         }
@@ -39,29 +39,37 @@ const matchProvider = db.matchProvider(input.value);
 
 
 <template>
-    <div class="form-app row justify-center">
+    <div class="jumping-app row justify-center">
         <VaCard class="flex xl5 lg8 md10 sm10 xs11">
             <VaCardTitle class="row justify-center">
                 <img :src="navSvg" alt="jumping-url-logo" />
             </VaCardTitle>
-            <VaCardContent class="row justify-center">
+            <VaCardContent class="row justify-center jumping-card-content">
+
                 <div class="flex flex-col xs12">
-                    <p style="text-align: center">Please wait … we will jump to <span style="color:orange">{{ showURL
-                            }}</span></p>
+                    <p>current running mode is <b>{{
+                        matchProvider.getName() }}</b></p>
+                </div>
+                <div class="flex flex-col xs12">
+                    <p>Please wait … we will jump to</p>
                 </div>
 
-                <div class="flex flex-col xs12" style="margin-top: 2em">
-                    <p style="text-align: center">current db mode is <span style="font-weight: bold;">{{ matchProvider.getName() }}</span></p>
+                <div class="flex flex-col xs12" style="padding-bottom: 1em;">
+                    <p :style="{'color': showURL ? 'orange' : 'inherit'}">
+                        <a :href="showURL || 'javascript:void;'" _target="blank">{{ showURL || "finding url …" }}</a>
+                    </p>
                 </div>
+
+
             </VaCardContent>
         </VaCard>
     </div>
 </template>
 
 <style lang="less">
-@import "vuestic-ui/styles/grid";
 
-.form-app {
+
+.jumping-app {
     max-height: 65vh;
 
     .va-card {
@@ -79,6 +87,29 @@ const matchProvider = db.matchProvider(input.value);
 
         .va-card-title img:hover {
             animation: va-card-title-img-rotating 0.2s linear infinite;
+        }
+
+        .jumping-card-content {
+
+            p {
+                overflow: hidden;
+                text-align: center;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+                padding-bottom: 0.5em;
+
+                
+            }
+
+
+            div:nth-of-type(2) {
+                margin-top: 1.5em;
+            }
+
+            div:nth-of-type(3) {
+                margin-top: 1.5em;
+                padding-bottom: 1em;
+            }
         }
 
         @keyframes va-card-title-img-rotating {

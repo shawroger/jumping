@@ -1,4 +1,5 @@
-.toast-success-msg .va-toast__content {}
+
+@import "vuestic-ui/styles/grid";
 
 .toast-success-msg p {
   word-break: break-all;
