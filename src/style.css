@@ -1,0 +1,5 @@
+.toast-success-msg .va-toast__content {}
+
+.toast-success-msg p {
+  word-break: break-all;
+}
