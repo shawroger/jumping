@@ -47,7 +47,7 @@ watch(routeFullPath, () => {
 
     <template #left>
       <VaSidebar activeColor="#04030C" v-model="showSidebar" :style="{ 'width': showSidebar ? (width < 700 ? '100vw' : '100%') : '0px' }">
-        <VaSidebarItem :active="page === 0" @click="page = 0" to="/">
+        <VaSidebarItem :active="page === 0" @click="page = 0; showSidebar = false" to="/">
           <VaSidebarItemContent>
             <VaIcon name="home" />
             <VaSidebarItemTitle>
@@ -55,7 +55,7 @@ watch(routeFullPath, () => {
             </VaSidebarItemTitle>
           </VaSidebarItemContent>
         </VaSidebarItem>
-        <VaSidebarItem :active="page === 1" @click="page = 1" to="/~dataview">
+        <VaSidebarItem :active="page === 1" @click="page = 1; showSidebar = false" to="/~dataview">
           <VaSidebarItemContent>
             <VaIcon name="bubble_chart" />
             <VaSidebarItemTitle>
@@ -63,7 +63,7 @@ watch(routeFullPath, () => {
             </VaSidebarItemTitle>
           </VaSidebarItemContent>
         </VaSidebarItem>
-        <VaSidebarItem :active="page === 2" @click="page = 2" to="/~settings">
+        <VaSidebarItem :active="page === 2" @click="page = 2; showSidebar = false" to="/~settings">
           <VaSidebarItemContent>
             <VaIcon name="settings" />
             <VaSidebarItemTitle>

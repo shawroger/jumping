@@ -19,20 +19,30 @@ const router = useRouter();
 const input = ref(props.to);
 const matchProvider = db.matchProvider(input.value);
 
+function checkAppURL(url: string) {
+    if(url.includes("es:/") && !url.includes("es://")) {
+        url = url.replace("es:/", "es://");
+    }
 
+    if(url.includes("file://") && !url.includes("file:///")) {
+        url = url.replace("es:/", "es://");
+    }
+
+    return url;
+}
 
 (async function faraway() {
     if (matchProvider) {
-        const towhere = await matchProvider.getItem(input.value);
+        
+        const towhere = await matchProvider.getItem(checkAppURL(input.value));
         if (!towhere) {
             router.push("/~404");
             return;
         }
         willgoto.value = towhere;
         showURL.value = matchProvider.showURLText(towhere);
-        console.log(matchProvider)
     }
-    window.location.href = willgoto.value;
+    window.location.assign(willgoto.value);
 })()
 
 </script>
@@ -81,7 +91,7 @@ const matchProvider = db.matchProvider(input.value);
         }
 
         .va-card-title img {
-            width: 45%;
+            width: 35%;
             animation: va-card-title-img-rotating 0.3s linear infinite;
         }
 

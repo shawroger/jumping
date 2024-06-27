@@ -39,7 +39,7 @@ import navSvg from "../assets/navigation-svgrepo-com.svg"
         }
 
         .va-card-title img {
-            width: 45%;
+            width: 35%;
             animation: va-card-title-img-rotating-bad404 0.5s linear infinite;
         }
 

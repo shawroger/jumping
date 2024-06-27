@@ -18,11 +18,12 @@ export class IndexDBController implements I_DBController {
 
 
     showURLText = (url: string) => url;
+    downloadPrefix: string = "jumpingData@indexDB-";
 
 
     async download() {
         const data = await this.getAll();
-        const filename = "jumpingData@indexDB-" + getTimestampStr() + ".txt"
+        const filename = this.downloadPrefix + getTimestampStr() + ".txt"
         createDownloadTxt(filename, data.map(e => e.join(",")).join("\n"));
         return "download " + filename + " successfully";
     }
@@ -106,6 +107,7 @@ export class IndexDBController implements I_DBController {
     }
     async init() {
         this.autoKeyLen = parseNumber(findSettingByName(this, "UUID_LENGTH"), 6);
+        this.downloadPrefix = (findSettingByName(this, "DOWNLOAD_PREFIX") || this.downloadPrefix).toString();
 
         console.log(this.getName() + " is initialized\nauto key length is " + this.autoKeyLen)
 

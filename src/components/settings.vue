@@ -15,6 +15,7 @@ function changeSelection() {
     const [provider, _] = db.findByDesp(choosenMode.value);
     if (provider) {
         currentSettingMode.value = provider;
+        loadSettingsFromStorage();
     }
 }
 

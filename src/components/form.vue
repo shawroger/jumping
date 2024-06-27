@@ -93,7 +93,7 @@ async function applyEvent() {
         }
 
         .va-card-title img {
-            width: 45%;
+            width: 35%;
             animation: va-card-title-img-rotating-form 5s infinite;
             animation-timing-function:cubic-bezier(0.455, 0.03, 0.515, 0.955);
         }
