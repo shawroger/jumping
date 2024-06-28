@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from "vue"
 import { loadDB } from "../utils/loadDB";
 import navSvg from "../assets/navigation-svgrepo-com.svg"
 
+import ClipboardJS from "clipboard";
 import { useToast, useModal } from 'vuestic-ui';
 
 const { notify } = useToast();
@@ -206,8 +207,18 @@ async function confirmEditItem() {
     editValueOld.value = '';
 
     await readData();
+}
 
-
+function copyItemKey(key: string) {
+    const copyURL = window.location.origin + "/" + key;
+    ClipboardJS.copy(copyURL);
+    notify({
+        message: copyURL + " is copied",
+        color: "#04030C",
+        duration: 5000,
+        position: 'bottom-right',
+        customClass: "toast-success-msg"
+    });
 }
 
 onMounted(() => readData())
@@ -258,12 +269,12 @@ onMounted(() => readData())
                     </div>
                     <VaDataTable :loading="loadingTable" :items="tableData" :columns="columns" :per-page="perPage"
                         :current-page="currentPage" :filter="filter" @filtered="filtered = $event.items">
-                        <template #cell(URL)="{ value }">
-
-                            <a :href="value" _target="_blank">{{ value }}</a>
-
+                        <template #cell(KEY)="{ value }">
+                            <span @click="copyItemKey(value)">{{ value }}</span>
                         </template>
-
+                        <template #cell(URL)="{ value }">
+                            <a :href="value" _target="_blank">{{ value }}</a>
+                        </template>
                         <template #bodyAppend>
                             <tr v-if="tableData.length > 0">
                                 <td :colspan="columns.length">
@@ -313,12 +324,21 @@ onMounted(() => readData())
         }
 
         .table-id-class {
-            font-size: 0.8em;
+           font-size: 0.9em;
+           transform: translateY(1.5px);
         }
 
         .table-key-class {
             font-weight: bolder;
-            font-family: Consolas, monaco, monospace;
+            transform: translateY(-1px);
+            span {
+                cursor: pointer;
+                font-family: Consolas, monaco, monospace;
+                &:hover {
+                    color: blue;
+                }
+            }
+           
         }
 
         .table-url-class {

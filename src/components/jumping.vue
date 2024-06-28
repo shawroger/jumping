@@ -20,12 +20,16 @@ const input = ref(props.to);
 const matchProvider = db.matchProvider(input.value);
 
 function checkAppURL(url: string) {
-    if(url.includes("es:/") && !url.includes("es://")) {
-        url = url.replace("es:/", "es://");
+    if(url.includes(":/") && !url.includes("://")) {
+        url = url.replace(":/", "://");
+    }
+
+    if(url.includes("file:/") && !url.includes("file://")) {
+        url = url.replace("file:/", "file://");
     }
 
     if(url.includes("file://") && !url.includes("file:///")) {
-        url = url.replace("es:/", "es://");
+        url = url.replace("file://", "file:///");
     }
 
     return url;

@@ -1,7 +1,5 @@
-import { openDB } from "idb"
-import { I_DBController } from "./base";
 
-import { uid } from "uid/single";
+import { I_DBController } from "./base";
 
 export class JustGoto implements I_DBController {
     matchPriority =  () => -Infinity;
@@ -10,7 +8,7 @@ export class JustGoto implements I_DBController {
 
 
 
-    getName = () => "justgoto";
+    getName = () => "just-jumping";
 
     getDesp = () => "use origin input URL and do not shorten it";
 
@@ -22,7 +20,7 @@ export class JustGoto implements I_DBController {
 
     }
 
-    async addItemByAutoKey(value: string, uidLength = 5) {
+    async addItemByAutoKey(value: string) {
         return encodeURI(value);
     }
 
