@@ -19,9 +19,11 @@ function changeSelection() {
     }
 }
 
-const settingConfig = ref([] as I_DBControllerSettings[]);
 
 const settingValues = ref({} as any);
+
+const settingConfig = ref([] as I_DBControllerSettings[]);
+
 
 function loadSettingsFromStorage() {
     settingConfig.value = loadSettings(currentSettingMode.value);
@@ -34,16 +36,17 @@ onMounted(() => {
     loadSettingsFromStorage();
 })
 
-function confirmChange() {
+async function confirmChange() {
     const newSettings = mergeSettings(settingConfig.value, settingValues.value);
     setSettings(currentSettingMode.value, newSettings);
     loadSettingsFromStorage();
+    await currentSettingMode.value.init();
     notify({
-        message: "Settings have changed",
         color: "#04030C",
         duration: 5000,
         position: 'bottom-right',
-        customClass: "toast-success-msg"
+        customClass: "toast-success-msg",
+        message: "Settings have changed",
     });
 }
 
