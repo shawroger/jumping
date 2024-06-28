@@ -18,7 +18,7 @@ const route = useRoute();
 const db = loadDB();
 db.current().init();
 
-const page = ref(1);
+const page = ref(0);
 const showSidebar = ref(false);
 
 
@@ -30,12 +30,17 @@ function clickNavBar(value: boolean) {
 const isJumping = ref(false);
 const routeFullPath = computed(() => route.fullPath.slice(1));
 
-watch(routeFullPath, () => {
+function matchRoute() {
+
   page.value = routePaths.findIndex(e => e === route.path);
   isJumping.value = !routePaths.includes(route.fullPath);
+}
+
+watch(routeFullPath, () => {
+  matchRoute();
 })
 
-
+matchRoute();
 
 </script>
 
@@ -46,7 +51,8 @@ watch(routeFullPath, () => {
     </template>
 
     <template #left>
-      <VaSidebar activeColor="#04030C" v-model="showSidebar" :style="{ 'width': showSidebar ? (width < 700 ? '100vw' : '100%') : '0px' }">
+      <VaSidebar activeColor="#04030C" v-model="showSidebar"
+        :style="{ 'width': showSidebar ? (width < 700 ? '100vw' : '100%') : '0px' }">
         <VaSidebarItem :active="page === 0" @click="page = 0; showSidebar = false" to="/">
           <VaSidebarItemContent>
             <VaIcon name="home" />
@@ -91,13 +97,16 @@ watch(routeFullPath, () => {
 }
 
 .content-container {
-  min-height: 75vh;
+  min-height: 72vh;
 
-  // @media screen and (max-height: 768px) {
-  //   & {
+  @media screen and(max-width: 1200px) {
 
-  //     min-height: 90vh;
-  //   }
-  // }
+    min-height: 75vh;
+  }
+
+  @media screen and(max-width: 768px) {
+
+    min-height: 70vh;
+  }
 }
 </style>

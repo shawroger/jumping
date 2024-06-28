@@ -14,7 +14,7 @@ export class IndexDBController implements I_DBController {
 
 
     matchPriority = () => 0;
-    matchURL = (url: string) => /^[A-Z0-9]+$/.test(url) && url.length === this.autoKeyLen;
+    matchURL = (url: string) => /^[A-Z0-9]+$/.test(url) && ((url.length >= this.autoKeyLen-1) || (url.length <= this.autoKeyLen+1));
 
 
     showURLText = (url: string) => url;
