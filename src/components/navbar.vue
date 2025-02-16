@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import logo from "../assets/rogerlogo2.png"
 import { ref, defineEmits } from "vue"
-const showSidebar = ref(true);
+const showSidebar = ref(false);
 const clickNavBarEmit = defineEmits(["click-navbar"]);
 
 function clickNavBar() {
