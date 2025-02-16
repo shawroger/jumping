@@ -85,7 +85,7 @@ export class IndexDBController implements I_DBController {
 
     getName = () => "IndexDB";
 
-    getDesp = () => "use IndexDB to store data";
+    getDesp = () => "USE UID WITH INDEXDB";
 
     async getItem(key: string) {
         const db = await openDB(this.storeName, 1);
@@ -106,7 +106,7 @@ export class IndexDBController implements I_DBController {
         return key;
     }
     async init() {
-        this.autoKeyLen = parseNumber(findSettingByName(this, "UUID_LENGTH"), 6);
+        this.autoKeyLen = parseNumber(findSettingByName(this, "UUID_LENGTH") as string, 6);
         this.downloadPrefix = (findSettingByName(this, "DOWNLOAD_PREFIX") || this.downloadPrefix).toString();
 
         console.log(this.getName() + " is initialized\nauto key length is " + this.autoKeyLen)

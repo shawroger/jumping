@@ -26,3 +26,7 @@ export function catchParam(queryName: string | string[]): [string | null, string
 
     return [null, ""];
 }
+
+export function isArrayURL(url: string) {
+    return typeof(url) === "string" && url.startsWith("[") && url.endsWith("]") && url.includes("|");
+}

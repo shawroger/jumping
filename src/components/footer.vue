@@ -3,7 +3,7 @@
         <p>Auto Jumping Tools
         <p>
 
-        </p> Roger's &copy; 2024</p>
+        </p> Roger's &copy; 2025</p>
     </div>
 </template>
 

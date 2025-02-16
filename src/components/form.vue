@@ -67,7 +67,7 @@ async function applyEvent() {
                         label="URL" v-model="url" placeholder="INPUT YOUR URL" />
                     <VaButton style="height:30px; transform: translateY(9px);" @click="applyEvent">APPLY</VaButton>
                 </div>
-                <VaInput :readonly="true" label="SHORTEN URL" style="width:100%; margin-bottom: 2em;"
+                <VaInput :readonly="true" label="SHORTEN URL" style="width:100%; margin-bottom: 1em;"
                     v-model="generateURL" placeholder="WILL GENERATE YOUR SHORTEN URL" />
                 <!-- <VaCheckbox v-model="useIndexDB" class="mb-6"
                     label="I want to store the URL into indexDB to form a shorter url" /> -->

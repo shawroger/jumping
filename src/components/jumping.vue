@@ -3,6 +3,8 @@ import { ref, defineProps } from "vue"
 import { useRouter } from "vue-router"
 import { loadDB } from "../utils/loadDB";
 import navSvg from "../assets/navigation-svgrepo-com.svg"
+import { safeAtob } from "../db/justgoto";
+import { isArrayURL } from "../utils/checkURL";
 
 const props = defineProps({
     to: {
@@ -20,15 +22,15 @@ const input = ref(props.to);
 const matchProvider = db.matchProvider(input.value);
 
 function checkAppURL(url: string) {
-    if(url.includes(":/") && !url.includes("://")) {
+    if (url.includes(":/") && !url.includes("://")) {
         url = url.replace(":/", "://");
     }
 
-    if(url.includes("file:/") && !url.includes("file://")) {
+    if (url.includes("file:/") && !url.includes("file://")) {
         url = url.replace("file:/", "file://");
     }
 
-    if(url.includes("file://") && !url.includes("file:///")) {
+    if (url.includes("file://") && !url.includes("file:///")) {
         url = url.replace("file://", "file:///");
     }
 
@@ -37,17 +39,47 @@ function checkAppURL(url: string) {
 
 (async function faraway() {
     if (matchProvider) {
-        
+        if (matchProvider.getName() === "just-jumping") {
+            input.value = safeAtob(input.value);
+        }
         const towhere = await matchProvider.getItem(checkAppURL(input.value));
+        console.log("will jump to " + towhere);
         if (!towhere) {
             router.push("/~404");
             return;
         }
         willgoto.value = towhere;
-        showURL.value = matchProvider.showURLText(towhere);
     }
-    window.location.assign(willgoto.value);
+    jumpToURL(willgoto.value);
+
 })()
+
+function jumpToURL(url: string) {
+    if (isArrayURL(url)) {
+        const links = url.slice(1, -1).split("|");
+        showURL.value = links.join("<br />");
+        for (let i = 0; i < links.length; i++) {
+            if (
+                links[i] &&
+                links[i].length > 0
+            ) {
+                console.log("will jump to " + links[i] + ` URL[${i}]`);
+                window.open(encodeURI(links[i]), "_blank");
+            }
+        }
+    } else {
+
+        console.log("will jump to " + url);
+        window.open(encodeURI(url), "_blank");
+        showURL.value = url;
+    }
+}
+
+function manualJump(event: Event) {
+    event.preventDefault();
+    jumpToURL(willgoto.value);
+
+}
 
 </script>
 
@@ -69,8 +101,9 @@ function checkAppURL(url: string) {
                 </div>
 
                 <div class="flex flex-col xs12" style="padding-bottom: 1em;">
-                    <p :style="{'color': showURL ? 'orange' : 'inherit'}">
-                        <a :href="showURL || 'javascript:void;'" _target="blank">{{ showURL || "finding url …" }}</a>
+                    <p :style="{ 'color': showURL ? 'orange' : 'inherit' }">
+                        <a href="javascript:void" _target="blank" @click="manualJump" v-html="showURL ||
+                            'finding url …'"></a>
                     </p>
                 </div>
 
@@ -81,8 +114,6 @@ function checkAppURL(url: string) {
 </template>
 
 <style lang="less">
-
-
 .jumping-app {
     max-height: 65vh;
 
@@ -112,7 +143,7 @@ function checkAppURL(url: string) {
                 text-overflow: ellipsis;
                 padding-bottom: 0.5em;
 
-                
+
             }
 
 

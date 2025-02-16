@@ -67,8 +67,10 @@ async function confirmChange() {
                     <div class="row justify-center">
                         <div class="flex flex-col xs12" v-for="item in settingConfig" :key="item.name"
                             style="margin: 0.5em 0">
-                            <VaInput :label="item.desp" style="width:100%" v-model="settingValues[item.name]"
-                                :type="item.type" />
+                            <VaInput v-if="item.type !== 'boolean'" :label="item.desp" style="width:100%"
+                                v-model="settingValues[item.name]" :type="item.type" />
+                            <VaCheckbox v-else :label="item.desp" v-model="settingValues[item.name]" />
+
                         </div>
 
                         <div class="flex xs12 row justify-center" style="margin-top: 1.5em">
