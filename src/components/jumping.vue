@@ -64,13 +64,13 @@ function jumpToURL(url: string) {
                 links[i].length > 0
             ) {
                 console.log("will jump to " + links[i] + ` URL[${i}]`);
-                window.open(encodeURI(links[i]), "_blank");
+                window.open((links[i]), "_blank");
             }
         }
     } else {
 
         console.log("will jump to " + url);
-        window.open(encodeURI(url), "_blank");
+        window.open((url), "_blank");
         showURL.value = url;
     }
 }
