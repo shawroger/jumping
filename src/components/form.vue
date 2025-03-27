@@ -51,7 +51,7 @@ async function applyEvent() {
     });
   } catch (err) {
     notify({
-      message: err,
+      message: String(err),
       color: "danger",
       duration: 5000,
       position: "bottom-right",

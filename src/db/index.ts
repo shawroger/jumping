@@ -58,6 +58,14 @@ export class DB_Provider {
     return this._db[this.mode()];
   }
 
+  initProviders() {
+    for (const provider of this._db) {
+      provider.init();
+    }
+
+    return this;
+  }
+
   isValidModeIndex(modeIndex: number) {
     return 0 <= modeIndex && modeIndex < this._db.length;
   }
@@ -66,9 +74,10 @@ export class DB_Provider {
     const matchList = this._db.sort(
       (a, b) => -a.matchPriority() + b.matchPriority()
     );
+    console.log(["matchList: ", matchList]);
     for (const provider of matchList) {
       console.log("matchProvider: " + provider.getName());
-      if(excludeList.includes(provider.getName())) continue;
+      if (excludeList.includes(provider.getName())) continue;
       if (provider.matchURL(url)) {
         return provider;
       }
@@ -111,5 +120,6 @@ export class DB_Provider {
 export const db_Provider = DB_Provider.init()
   .use(JustGoto)
   .use(IndexDBController)
-  .use(WebhookController);
+  .use(WebhookController)
+  .initProviders();
 export const DB_PROVIDER_KEY = "db_provider";

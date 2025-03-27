@@ -1,15 +1,13 @@
 <script setup lang="ts">
-import navBar from './components/navbar.vue'
-import footerApp from './components/footer.vue'
-import jumping from './components/jumping.vue'
-
-import { watch, ref, computed } from "vue"
-import { loadDB } from './utils/loadDB';
-import { useWindow } from './utils/useWindow';
-import { useRoute, useRouter, onBeforeRouteUpdate } from 'vue-router';
-import { catchParam } from './utils/checkURL';
-import { routePaths } from './router';
-
+import navBar from "./components/navbar.vue";
+import footerApp from "./components/footer.vue";
+import jumping from "./components/jumping.vue";
+import { VNodeRef } from "vue";
+import { watch, ref, computed } from "vue";
+import { loadDB } from "./utils/loadDB";
+import { useWindow } from "./utils/useWindow";
+import { useRoute} from "vue-router";
+import { routePaths } from "./router";
 
 const { width } = useWindow();
 
@@ -19,9 +17,8 @@ const db = loadDB();
 db.current().init();
 
 const page = ref(0);
+const navRef = ref(null as VNodeRef | null);
 const showSidebar = ref(false);
-
-
 
 function clickNavBar(value: boolean) {
   showSidebar.value = value;
@@ -31,50 +28,63 @@ const isJumping = ref(false);
 const routeFullPath = computed(() => route.fullPath.slice(1));
 
 function matchRoute() {
-
-  page.value = routePaths.findIndex(e => e === route.path);
+  page.value = routePaths.findIndex((e) => e === route.path);
   isJumping.value = !routePaths.includes(route.fullPath);
 }
 
 watch(routeFullPath, () => {
   matchRoute();
-})
+});
 
 matchRoute();
 
+function clickMenu(pageValue: number) {
+  page.value = pageValue;
+  showSidebar.value = false; console.log(navRef.value);
+  if(navRef.value) {
+    navRef.value.showSidebar = false;
+  }
+}
 </script>
 
 <template>
   <VaLayout>
     <template #top>
-      <navBar @click-navbar="clickNavBar"></navBar>
+      <navBar @click-navbar="clickNavBar" ref="navRef"></navBar>
     </template>
 
     <template #left>
-      <VaSidebar activeColor="#04030C" v-model="showSidebar"
-        :style="{ 'width': showSidebar ? (width < 700 ? '100vw' : '100%') : '0px' }">
-        <VaSidebarItem :active="page === 0" @click="page = 0; showSidebar = false" to="/">
+      <VaSidebar
+        activeColor="#04030C"
+        v-model="showSidebar"
+        :style="{
+          width: showSidebar ? (width < 700 ? '100vw' : '100%') : '0px',
+        }"
+      >
+        <VaSidebarItem :active="page === 0" @click="clickMenu(0)" to="/">
           <VaSidebarItemContent>
             <VaIcon name="home" />
-            <VaSidebarItemTitle>
-              Home
-            </VaSidebarItemTitle>
+            <VaSidebarItemTitle> Home </VaSidebarItemTitle>
           </VaSidebarItemContent>
         </VaSidebarItem>
-        <VaSidebarItem :active="page === 1" @click="page = 1; showSidebar = false" to="/~dataview">
+        <VaSidebarItem
+          :active="page === 1"
+          @click="clickMenu(1)"
+          to="/~dataview"
+        >
           <VaSidebarItemContent>
             <VaIcon name="bubble_chart" />
-            <VaSidebarItemTitle>
-              Data viewer
-            </VaSidebarItemTitle>
+            <VaSidebarItemTitle> Data viewer </VaSidebarItemTitle>
           </VaSidebarItemContent>
         </VaSidebarItem>
-        <VaSidebarItem :active="page === 2" @click="page = 2; showSidebar = false" to="/~settings">
+        <VaSidebarItem
+          :active="page === 2"
+          @click="clickMenu(2)"
+          to="/~settings"
+        >
           <VaSidebarItemContent>
             <VaIcon name="settings" />
-            <VaSidebarItemTitle>
-              Settings
-            </VaSidebarItemTitle>
+            <VaSidebarItemTitle> Settings </VaSidebarItemTitle>
           </VaSidebarItemContent>
         </VaSidebarItem>
       </VaSidebar>
@@ -100,12 +110,10 @@ matchRoute();
   min-height: 72vh;
 
   @media screen and(max-width: 1200px) {
-
     min-height: 75vh;
   }
 
   @media screen and(max-width: 768px) {
-
     min-height: 70vh;
   }
 }

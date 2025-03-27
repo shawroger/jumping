@@ -1,23 +1,13 @@
-import { openDB } from "idb";
 import {
   I_DBController,
   I_DBControllerSettings,
   findSettingByName,
-  loadSettings,
-  parseNumber,
 } from "./base";
-import { getXID } from "../utils/xid";
 import axios from "axios";
 
-import { uid } from "uid/single";
-
 export class WebhookController implements I_DBController {
-  private storeName = "webhook";
-  private tableName = "jumping";
-
   private autoKeyLen = 6;
-  private useXID = true;
-  private webhook_url = "";
+  private webhookURL = "";
 
   matchPriority = () => (this.isValidWebhookURL() ? 5 : -2000);
   matchURL = (url: string) =>
@@ -28,7 +18,7 @@ export class WebhookController implements I_DBController {
   downloadPrefix: string = "jumpingData@indexDB-";
 
   private isValidWebhookURL(): boolean {
-    return !!this.webhook_url && this.webhook_url.startsWith("http");
+    return this.webhookURL.startsWith("http");
   }
 
   getSettings(): I_DBControllerSettings[] {
@@ -42,57 +32,61 @@ export class WebhookController implements I_DBController {
     ];
   }
 
-  getName = () => "Webhook";
+  getName = () => "webhook";
 
   getDesp = () => "USE UID VIA WEBHOOK";
 
   async getItem(key: string) {
     if (!this.isValidWebhookURL()) {
-      throw new Error("Invalid webhook url: " + this.webhook_url);
+      throw new Error("Invalid webhook url " + this.webhookURL);
     }
     return axios
-      .get(this.webhook_url, {
+      .get(this.webhookURL, {
         params: {
-          uid: key,
+          key,
         },
       })
       .then((res) => {
         const url = res.data.url ?? "";
-        if (!url) throw new Error("Bad response url: " + url);
+        if (!url) throw new Error(res.data.message);
         return url;
+      })
+      .catch((e) => {
+        throw e;
       });
   }
 
-  async addItemByAutoKey(value: string, uidLength?: number) {
+  async addItemByAutoKey(value: string) {
     if (!this.isValidWebhookURL()) {
-      throw new Error("Invalid webhook url: " + this.webhook_url);
+      throw new Error("Invalid webhook url " + this.webhookURL);
     }
 
     return await axios
-      .post(this.webhook_url, {
+      .post(this.webhookURL, {
         url: value,
       })
       .then((res) => {
-        const uid = res.data.uid ?? "";
-        if (!uid) throw new Error("Bad response uid: " + uid);
-        return uid;
+        const key = res.data.key ?? "";
+        if (!key) throw new Error(res.data.message);
+        return key;
+      })
+      .catch((e) => {
+        throw e;
       });
   }
 
   async init() {
-    this.webhook_url = String(findSettingByName(this, "WEBHOOK_URL"));
+    this.webhookURL = String(findSettingByName(this, "WEBHOOK_URL"));
 
     if (this.isValidWebhookURL()) {
       console.log(
-        this.getName() +
-          " is initialized\nas webhook url is " +
-          this.webhook_url
+        this.getName() + " is initialized\nas webhook url is " + this.webhookURL
       );
     } else {
       console.log(
         this.getName() +
           " is initialized incorrectly\nas webhook url " +
-          this.webhook_url +
+          this.webhookURL +
           " is invalid"
       );
     }

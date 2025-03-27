@@ -2,6 +2,7 @@
 import { ref, defineProps } from "vue";
 import { useRouter } from "vue-router";
 import { useToast } from "vuestic-ui";
+import ClipBoard from "clipboardy";
 import { loadDB } from "../utils/loadDB";
 import navSvg from "../assets/navigation-svgrepo-com.svg";
 import { safeAtob } from "../db/justgoto";
@@ -39,17 +40,19 @@ function checkAppURL(url: string) {
 }
 
 function webhookErrorAction() {
-  matchProvider.value = db.matchProvider(input.value, ["Webhook"]);
+  matchProvider.value = db.matchProvider(input.value, ["webhook"]);
   notify({
     message: "Webhook return bad url, try another provider ...",
     color: "warning",
     duration: 5000,
     position: "bottom-right",
   });
-  return faraway();
+  return farAway();
 }
 
-async function faraway() {
+
+
+async function farAway(): Promise<void> {
   if (matchProvider.value) {
     if (matchProvider.value.getName() === "just-jumping") {
       input.value = safeAtob(input.value);
@@ -58,7 +61,7 @@ async function faraway() {
       const towhere = await matchProvider.value.getItem(
         checkAppURL(input.value)
       );
-      if (!towhere && matchProvider.value.getName() === "Webhook") {
+      if (!towhere && matchProvider.value.getName() === "webhook") {
         return webhookErrorAction();
       }
 
@@ -74,9 +77,10 @@ async function faraway() {
   jumpToURL(willgoto.value);
 }
 
-faraway();
+farAway();
 
 function jumpToURL(url: string) {
+  if(!url) return;
   if (isArrayURL(url)) {
     const links = url.slice(1, -1).split("|");
     showURL.value = links.join("<br />");
@@ -96,6 +100,23 @@ function jumpToURL(url: string) {
 function manualJump(event: Event) {
   event.preventDefault();
   jumpToURL(willgoto.value);
+  ClipBoard.write(willgoto.value)
+    .then(() => {
+      notify({
+        message: "URL copied to clipboard",
+        color: "primary",
+        duration: 5000,
+        position: "bottom-right",
+      });
+    })
+    .catch((e) => {
+      notify({
+        message: "Copy to clipboard failed: " + e,
+        color: "warning",
+        duration: 5000,
+        position: "bottom-right",
+      });
+    });
 }
 </script>
 

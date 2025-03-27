@@ -107,8 +107,13 @@ export class IndexDBController implements I_DBController {
 
   async addItem(key: string, value: string) {
     const db = await openDB(this.storeName, 1);
-    db.add(this.tableName, value, key);
-    db.close();
+    const tx = db.transaction(this.tableName, 'readwrite');
+    try {
+      await tx.store.add(value, key);
+      await tx.done;
+    } finally {
+      db.close();
+    }
   }
 
   async addItemByAutoKey(value: string, uidLength?: number) {
@@ -118,6 +123,7 @@ export class IndexDBController implements I_DBController {
     this.addItem(key, value);
     return key;
   }
+  
   async init() {
     this.useXID = Boolean(findSettingByName(this, "USE_XID"));
     this.autoKeyLen = parseNumber(
@@ -132,11 +138,15 @@ export class IndexDBController implements I_DBController {
       this.getName() + " is initialized\nauto key length is " + this.autoKeyLen
     );
 
-    openDB(this.storeName, 1, {
+    // 修改数据库初始化逻辑
+    const db = await openDB(this.storeName, 1, {
       upgrade: (db) => {
-        db.createObjectStore(this.tableName);
-      },
+        if (!db.objectStoreNames.contains(this.tableName)) {
+          db.createObjectStore(this.tableName);
+        }
+      }
     });
+    db.close();
   }
 
   async getAll() {

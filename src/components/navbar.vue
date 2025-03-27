@@ -3,7 +3,7 @@ import logo from "../assets/rogerlogo2.png"
 import { ref, defineEmits } from "vue"
 const showSidebar = ref(false);
 const clickNavBarEmit = defineEmits(["click-navbar"]);
-
+defineExpose({ showSidebar })
 function clickNavBar() {
   showSidebar.value = !showSidebar.value;
   clickNavBarEmit("click-navbar", showSidebar.value);
