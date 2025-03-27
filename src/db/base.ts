@@ -100,7 +100,6 @@ export interface I_DBController {
   editItem?: (key: string, value: string) => string | Promise<string>;
 
   init: (params?: any) => void;
-  addItem: (key: string, value: string) => void;
   getItem: (key: string) => string | Promise<string>;
   addItemByAutoKey: (
     value: string,

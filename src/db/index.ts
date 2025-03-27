@@ -1,6 +1,7 @@
 import { I_DBController } from "./base";
 import { IndexDBController } from "./indexdb";
 import { JustGoto } from "./justgoto";
+import { WebhookController } from "./webhook";
 
 type Constructor<T> = new (...args: any[]) => T;
 
@@ -61,12 +62,13 @@ export class DB_Provider {
     return 0 <= modeIndex && modeIndex < this._db.length;
   }
 
-  matchProvider(url: string) {
+  matchProvider(url: string, excludeList = [] as string[]) {
     const matchList = this._db.sort(
       (a, b) => -a.matchPriority() + b.matchPriority()
     );
     for (const provider of matchList) {
       console.log("matchProvider: " + provider.getName());
+      if(excludeList.includes(provider.getName())) continue;
       if (provider.matchURL(url)) {
         return provider;
       }
@@ -108,5 +110,6 @@ export class DB_Provider {
 
 export const db_Provider = DB_Provider.init()
   .use(JustGoto)
-  .use(IndexDBController);
+  .use(IndexDBController)
+  .use(WebhookController);
 export const DB_PROVIDER_KEY = "db_provider";

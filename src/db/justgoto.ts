@@ -17,7 +17,7 @@ export function safeAtob(text?: string) {
 
 export class JustGoto implements I_DBController {
   useBase64 = true;
-  matchPriority = () => -Infinity;
+  matchPriority = () => -1000;
   matchURL = (url: string) => true;
 
   getName = () => "just-jumping";
