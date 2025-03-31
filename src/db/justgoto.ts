@@ -5,20 +5,20 @@ import {
 } from "./base";
 
 function isBase64Text(text?: string) {
-    if (!text) return true;
-    return false === "!%@#:<*&->.?|;".split("").some((e) => text.includes(e));
+  if (!text) return true;
+  return false === "!%@#:<*&->.?|;".split("").some((e) => text.includes(e));
 }
 
 export function safeAtob(text?: string) {
-    if (!text) return "";
-    if (isBase64Text(text)) return atob(text);
-    return text;
+  if (!text) return "";
+  if (isBase64Text(text)) return atob(text);
+  return text;
 }
 
 export class JustGoto implements I_DBController {
   useBase64 = true;
   matchPriority = () => -1000;
-  matchURL = (url: string) => true;
+  matchURL = (_: string) => true;
 
   getName = () => "just-jumping";
 
@@ -28,9 +28,11 @@ export class JustGoto implements I_DBController {
     return decodeURI(key);
   }
 
-  async addItem(key: string, value: string) {}
+  async addItem(value: string, _: string) {
+    return this.addItemByAutoKey(value);
+  }
 
-  async addItemByAutoKey(value: string) {
+  private async addItemByAutoKey(value: string) {
     return this.useBase64 ? btoa(encodeURI(value)) : encodeURI(value);
   }
 

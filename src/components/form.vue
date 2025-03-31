@@ -37,7 +37,7 @@ async function applyEvent() {
     return;
   }
   try {
-    const key = await db.current().addItemByAutoKey(input);
+    const key = await db.current().addItem(input, generateURL.value);
     const targetURL = window.location.origin + "/" + key;
     generateURL.value = key;
     ClipboardJS.copy(targetURL);
@@ -88,7 +88,7 @@ async function applyEvent() {
           >
         </div>
         <VaInput
-          :readonly="true"
+          :readonly="choosenMode == 'USE ORIGIN URL'"
           label="SHORTEN URL"
           style="width: 100%; margin-bottom: 1em"
           v-model="generateURL"

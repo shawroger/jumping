@@ -56,7 +56,7 @@ export class WebhookController implements I_DBController {
       });
   }
 
-  async addItemByAutoKey(value: string) {
+  async addItem(value: string, inputkey: string) {
     if (!this.isValidWebhookURL()) {
       throw new Error("Invalid webhook url " + this.webhookURL);
     }
@@ -64,6 +64,7 @@ export class WebhookController implements I_DBController {
     return await axios
       .post(this.webhookURL, {
         url: value,
+        key: inputkey
       })
       .then((res) => {
         const key = res.data.key ?? "";
@@ -92,3 +93,4 @@ export class WebhookController implements I_DBController {
     }
   }
 }
+

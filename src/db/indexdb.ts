@@ -3,7 +3,6 @@ import {
   I_DBController,
   I_DBControllerSettings,
   findSettingByName,
-  loadSettings,
   parseNumber,
 } from "./base";
 import { getXID } from "../utils/xid";
@@ -105,14 +104,15 @@ export class IndexDBController implements I_DBController {
     return value ? String(value) : "";
   }
 
-  async addItem(key: string, value: string) {
+  async addItem(value: string, key: string) {
     const db = await openDB(this.storeName, 1);
-    const tx = db.transaction(this.tableName, 'readwrite');
+    const tx = db.transaction(this.tableName, "readwrite");
     try {
       await tx.store.add(value, key);
       await tx.done;
     } finally {
       db.close();
+      return key;
     }
   }
 
@@ -123,7 +123,7 @@ export class IndexDBController implements I_DBController {
     this.addItem(key, value);
     return key;
   }
-  
+
   async init() {
     this.useXID = Boolean(findSettingByName(this, "USE_XID"));
     this.autoKeyLen = parseNumber(
@@ -144,7 +144,7 @@ export class IndexDBController implements I_DBController {
         if (!db.objectStoreNames.contains(this.tableName)) {
           db.createObjectStore(this.tableName);
         }
-      }
+      },
     });
     db.close();
   }

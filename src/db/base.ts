@@ -101,9 +101,10 @@ export interface I_DBController {
 
   init: (params?: any) => void;
   getItem: (key: string) => string | Promise<string>;
-  addItemByAutoKey: (
+
+  addItem: (
     value: string,
-    uidLength?: number
+    key: string,
   ) => string | Promise<string>;
 
   // can ignore
