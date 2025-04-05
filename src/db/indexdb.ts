@@ -104,7 +104,12 @@ export class IndexDBController implements I_DBController {
     return value ? String(value) : "";
   }
 
-  async addItem(value: string, key: string) {
+  async addItem(value: string, inputkey: string) {
+    const key = inputkey && inputkey.length
+      ? inputkey
+      : this.useXID
+      ? getXID()
+      : uid(this.autoKeyLen).toUpperCase();
     const db = await openDB(this.storeName, 1);
     const tx = db.transaction(this.tableName, "readwrite");
     try {
